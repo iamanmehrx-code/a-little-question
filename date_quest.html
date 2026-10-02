@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Tiny Date Quest 💌</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #fff1f5, #f8f0ff 55%, #fff8ed);
+    color: #29202a;
+    overflow: hidden;
+  }
+
+  .emoji-bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .emoji {
+    position: absolute;
+    font-size: 28px;
+    opacity: .20;
+    animation: float 8s ease-in-out infinite;
+  }
+  .emoji:nth-child(1){left:7%;top:10%;animation-delay:0s}
+  .emoji:nth-child(2){left:84%;top:12%;animation-delay:1s}
+  .emoji:nth-child(3){left:15%;top:75%;animation-delay:2s}
+  .emoji:nth-child(4){left:78%;top:72%;animation-delay:3s}
+  .emoji:nth-child(5){left:45%;top:8%;animation-delay:4s}
+  .emoji:nth-child(6){left:92%;top:45%;animation-delay:2s}
+  .emoji:nth-child(7){left:3%;top:43%;animation-delay:5s}
+  .emoji:nth-child(8){left:55%;top:85%;animation-delay:1s}
+  .emoji:nth-child(9){left:31%;top:88%;animation-delay:4s}
+  .emoji:nth-child(10){left:66%;top:30%;animation-delay:6s}
+
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-18px) rotate(8deg); }
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+  }
+
+  .card {
+    width: min(520px, 94vw);
+    min-height: 540px;
+    padding: 42px 30px;
+    border-radius: 30px;
+    background: rgba(255,255,255,.78);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 25px 70px rgba(110, 60, 100, .16);
+    border: 1px solid rgba(255,255,255,.9);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .progress {
+    width: 100%;
+    height: 6px;
+    background: #f0dce6;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 30px;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 20%;
+    background: linear-gradient(90deg,#ff6f91,#a66cff);
+    border-radius: 20px;
+    transition: width .4s ease;
+  }
+
+  .question-emoji {
+    font-size: 52px;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-size: clamp(28px, 7vw, 40px);
+    margin: 0 0 12px;
+    line-height: 1.12;
+  }
+
+  p {
+    color: #756875;
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0 auto 28px;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  button {
+    border: 0;
+    padding: 14px 25px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+
+  button:hover { transform: translateY(-2px); }
+
+  .yes, .option {
+    background: #29202a;
+    color: white;
+    box-shadow: 0 10px 25px rgba(41,32,42,.18);
+  }
+
+  .no {
+    background: #fff;
+    color: #8d7784;
+    border: 1px solid #eadde5;
+    position: relative;
+  }
+
+  .option {
+    min-width: 145px;
+  }
+
+  .selected {
+    outline: 3px solid rgba(255,111,145,.25);
+    transform: translateY(-2px);
+  }
+
+  .tiny {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #a08e99;
+  }
+
+  .hidden { display:none; }
+
+  .final-heart {
+    font-size: 70px;
+    animation: heartbeat 1.1s infinite;
+  }
+
+  @keyframes heartbeat {
+    0%,100% { transform: scale(1); }
+    20% { transform: scale(1.12); }
+    40% { transform: scale(1); }
+  }
+
+  .summary {
+    background: #fff7fa;
+    padding: 17px;
+    border-radius: 18px;
+    margin: 15px 0 25px;
+    line-height: 1.8;
+  }
+
+  .small-note {
+    font-size: 13px;
+    color: #9a8993;
+    margin-top: 16px;
+  }
+
+  @media(max-width:480px){
+    .card { min-height: 510px; padding: 32px 20px; }
+    .question-emoji { font-size: 44px; }
+  }
+</style>
+</head>
+
+<body>
+<div class="emoji-bg" aria-hidden="true">
+  <span class="emoji">💌</span><span class="emoji">🍝</span>
+  <span class="emoji">🇮🇹</span><span class="emoji">❤️</span>
+  <span class="emoji">✨</span><span class="emoji">🍜</span>
+  <span class="emoji">🌙</span><span class="emoji">🌹</span>
+  <span class="emoji">🫶</span><span class="emoji">🍽️</span>
+</div>
+
+<div class="wrap">
+  <main class="card">
+
+    <div id="quiz">
+      <div class="progress"><div class="progress-bar" id="progress"></div></div>
+
+      <div id="questionBox">
+        <div class="question-emoji" id="emoji">🏠</div>
+        <h1 id="question">You like being in your room?</h1>
+        <p id="subtext">Be honest. I promise this isn't a personality test. 😭</p>
+
+        <div class="buttons" id="answers"></div>
+        <div class="tiny" id="tiny"></div>
+      </div>
+    </div>
+
+    <div id="final" class="hidden">
+      <div class="final-heart">💌</div>
+      <h1>Date Quest Complete!</h1>
+      <p>Okay... now we have a plan. 👀</p>
+
+      <div class="summary">
+        <strong>📅 Day:</strong> <span id="finalDay"></span><br>
+        <strong>🍽️ Cuisine:</strong> <span id="finalCuisine"></span>
+      </div>
+
+      <p><strong>Mission accepted. See you at dinner. 😌❤️</strong></p>
+      <div class="small-note">No refunds. No cancellations. 😂</div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const questions = [
+  {
+    emoji: "🏠",
+    text: "You like being in your room?",
+    sub: "Be honest. I promise this isn't a personality test. 😭",
+    options: ["Yes", "No"]
+  },
+  {
+    emoji: "🧴",
+    text: "A weird thing you like is Vicks?",
+    sub: "Don't ask why I know this. 😂",
+    options: ["Yes", "No"]
+  },
+  {
+    emoji: "🇮🇹",
+    text: "You're in the Italian Department?",
+    sub: "One more very important question... 👀",
+    options: ["Yes", "No"]
+  },
+  {
+    emoji: "🍷",
+    text: "Would you like to go out with me on a dinner date?",
+    sub: "Think carefully. This answer has consequences. 😌",
+    options: ["❤️ Yes", "😈 No"],
+    special: true
+  },
+  {
+    emoji: "📅",
+    text: "When should we do this?",
+    sub: "Choose your preferred day.",
+    options: ["Weekend 🥂", "Weekday 🌙"],
+    key: "day"
+  },
+  {
+    emoji: "🍽️",
+    text: "What are we eating?",
+    sub: "Very important scientific research.",
+    options: ["Asian 🌏", "European 🇪🇺", "Chinese 🥢", "Continental 🍴"],
+    key: "cuisine"
+  }
+];
+
+let current = 0;
+const answers = {};
+
+const emojiEl = document.getElementById("emoji");
+const questionEl = document.getElementById("question");
+const subtextEl = document.getElementById("subtext");
+const answersEl = document.getElementById("answers");
+const progressEl = document.getElementById("progress");
+const tinyEl = document.getElementById("tiny");
+
+function renderQuestion() {
+  const q = questions[current];
+
+  emojiEl.textContent = q.emoji;
+  questionEl.textContent = q.text;
+  subtextEl.textContent = q.sub;
+  tinyEl.textContent = "";
+  progressEl.style.width = `${((current + 1) / questions.length) * 100}%`;
+  answersEl.innerHTML = "";
+
+  q.options.forEach((option, index) => {
+    const btn = document.createElement("button");
+    btn.textContent = option;
+    btn.className = index === 0 ? "yes" : (q.special ? "no" : "option");
+
+    if (q.special && index === 1) {
+      btn.id = "runawayNo";
+      btn.addEventListener("mouseenter", moveNo);
+      btn.addEventListener("click", moveNo);
+    } else {
+      btn.addEventListener("click", () => choose(option));
+    }
+
+    answersEl.appendChild(btn);
+  });
+}
+
+function choose(option) {
+  const q = questions[current];
+
+  if (q.key) answers[q.key] = option;
+
+  if (current === 3) {
+    answers.date = "Yes";
+  }
+
+  if (current < questions.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    showFinal();
+  }
+}
+
+let noMoves = 0;
+
+function moveNo(e) {
+  const btn = document.getElementById("runawayNo");
+  if (!btn) return;
+
+  noMoves++;
+
+  // Keep the button within a safe area of the viewport.
+  const maxX = Math.max(30, window.innerWidth - btn.offsetWidth - 30);
+  const maxY = Math.max(30, window.innerHeight - btn.offsetHeight - 30);
+
+  btn.style.position = "fixed";
+  btn.style.left = Math.floor(30 + Math.random() * (maxX - 30)) + "px";
+  btn.style.top = Math.floor(30 + Math.random() * (maxY - 30)) + "px";
+
+  if (noMoves === 3) {
+    tinyEl.textContent = "Okay okay... you really tried. 😂";
+  }
+  if (noMoves === 6) {
+    tinyEl.textContent = "Fine. I'll stop running. But you know where the Yes button is. 😭";
+  }
+}
+
+function showFinal() {
+  document.getElementById("quiz").classList.add("hidden");
+  document.getElementById("final").classList.remove("hidden");
+  document.getElementById("finalDay").textContent = answers.day || "You decide";
+  document.getElementById("finalCuisine").textContent = answers.cuisine || "Surprise me";
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
